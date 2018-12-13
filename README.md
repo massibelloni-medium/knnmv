@@ -2,7 +2,7 @@
 
 This is a Python implementation of a KNN imputer that specifically takes into account missing values in the distance metric.
 It has shown to outperform the default XGBoost built-in strategy and a simple column-wise median imputation. <br />
-Further infos about the theoretical background of this research can be found in the related post on __Medium__.
+Further infos about the theoretical background of this research can be found in the related [post](https://towardsdatascience.com/xgboost-is-not-black-magic-56ca013144b4) on __Medium__.
 
 ## Installation
 ```sh
