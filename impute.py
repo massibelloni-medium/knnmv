@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import MinMaxScaler
 from .metrics import dist_with_miss
@@ -90,7 +91,7 @@ class KNNMVImputer (BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, verbose=False, verbose_size=100):
         """Impute all missing values in X.
         Parameters
         ----------
@@ -109,11 +110,17 @@ class KNNMVImputer (BaseEstimator, TransformerMixin):
         if (X.shape[1] != self.statistics_):
             raise ValueError("X has %d features per sample, expected %d"
                              % (X.shape[1], self.statistics_))
-
+        if(verbose):
+            print("Scaling the input.")
         X = self._validate_input(X)
         Xt_in = self.scaler.transform(X)
-
+        batch_count = 0
+        n_batches = np.ceil(len(Xt_in) / verbose_size)
         for i in range(len(Xt_in)):
+            if(verbose and (i % verbose_size) == 0):
+                start = datetime.datetime.now()
+                print("Batch %d out of %d" % (batch_count+1, n_batches))
+                print("\tStarted: %s " % (start))
             row = Xt_in[i, :]
             if(np.sum(np.isnan(row)) > 0):
 
@@ -136,10 +143,14 @@ class KNNMVImputer (BaseEstimator, TransformerMixin):
                     else:
                         md = np.median(vls)
                     Xt_in[i, nanidx] = md
-
+            if(verbose and (i % verbose_size) == (verbose_size-1)):
+                end = datetime.datetime.now()
+                batch_count = batch_count+1
+                print("\tEnded: %s " % (end))
+                print("Elapsed: %s" % (end-start))
         return Xt_in
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None, verbose=False):
         """Fit the imputer on X and impute all missing values in X.
         Parameters
         ----------
@@ -150,4 +161,4 @@ class KNNMVImputer (BaseEstimator, TransformerMixin):
         X_new : {array-like}, shape (n_samples, n_features)
             Transformed array.
         """
-        return self.fit(X).transform(X)
+        return self.fit(X).transform(X, verbose=verbose)
